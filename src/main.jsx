@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import App from './app';
+import App from './jsx/app';
 
 // Main method, Append to DOM
 ReactDOM.render(

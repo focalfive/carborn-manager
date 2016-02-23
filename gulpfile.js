@@ -2,11 +2,19 @@ var gulp = require('gulp'),
     del = require('del'),
 	browserify = require('browserify'),
     source = require('vinyl-source-stream'),
+    libs = [
+        'bower_components/jquery/dist/jquery.min.js',
+        'bower_components/jquery.easing/js/jquery.easing.min.js',
+        'bower_components/bootstrap/dist/css/bootstrap.min.css',
+        'bower_components/bootstrap/dist/fonts/*.*',
+        'bower_components/bootstrap/dist/js/bootstrap.min.js'
+    ],
     src = {
         root: 'src',
         html: 'src/*.html',
         css: 'src/**/*.css',
         js: 'src/**/*.js',
+        jsx: 'src/**/*.jsx',
         app: 'src/main.jsx'
     },
     dest = 'build',
@@ -18,6 +26,15 @@ var gulp = require('gulp'),
 gulp.task('clean', function() {
 	del(dest);
 });
+    
+/**
+ * Copy libraries
+ */
+gulp.task('libs', function() {
+    gulp.src(libs).
+    pipe(gulp.dest(dest + '/libs'));
+});
+
     
 /**
  * Copy HTML
@@ -79,13 +96,14 @@ gulp.task('bundle', function() {
  * Watch bundle
  */
 gulp.task('watch:bundle', ['bundle'], function() {
-    gulp.watch(src.app, ['bundle']);
+    gulp.watch(src.jsx, ['bundle']);
 });
 
 /**
  * Default
  */
 gulp.task('default', [
+    'libs',
 	'watch:html',
 	'watch:css',
 	'watch:js',
