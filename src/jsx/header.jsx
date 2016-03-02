@@ -24,6 +24,28 @@ class Header extends React.Component {
                 </ul>
             );
         }
+        var route = this.props.route;
+        if(!route) {
+            route = 'home';
+        }
+        var menu = [
+            {
+                id: 'home',
+                title: 'Home',
+                url: '/#home'
+            },
+            {
+                id: 'list',
+                title: 'Menu Hierarchy',
+                url: '/#list'
+            },
+            {
+                id: 'car',
+                title: 'Car data',
+                url: '/#car'
+            }
+        ];
+        
         return (
             <nav className="navbar navbar-fixed-top navbar-inverse">
                 <div className="container">
@@ -34,13 +56,17 @@ class Header extends React.Component {
                             <span className="icon-bar"></span>
                             <span className="icon-bar"></span>
                         </button>
-                        <a className="navbar-brand" href="/">Carborn Manager</a>
+                        <a className="navbar-brand" href="/#home">Carborn Manager</a>
                     </div>
                     <div id="navbar" className="collapse navbar-collapse">
                         <ul className="nav navbar-nav">
-                            <li className="active"><a href="/">Home</a></li>
-                            <li><a href="#list">Menu Hierarchy</a></li>
-                            <li><a href="#car">Car data</a></li>
+                            {menu.map(function(model) {
+                                if(route === model.id) {
+                                    return (<li key={model.id} className="active"><a href={model.url}>{model.title}</a></li>);
+                                } else {
+                                    return (<li key={model.id}><a href={model.url}>{model.title}</a></li>);
+                                }
+                            })}
                         </ul>
                         {logoutButton}
                     </div>

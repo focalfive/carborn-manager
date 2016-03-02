@@ -4,7 +4,9 @@ import Cookie from './utils/cookie';
 import Header from './header';
 import SignIn from './sign-in';
 import Loading from './loading'
-import Home from './home';
+import HomeView from './home-view';
+import ListView from './list-view';
+import CarView from './car-view';
 
 injectTapEventPlugin();
 
@@ -22,9 +24,11 @@ class App extends React.Component {
             apiKey: 'kJbBe3wvZnh75A1GThWK15M27QomYQZhWxdIDTFO',
             sessionToken: '',
             loginStatus: -1,
-            loading: true
+            loading: true,
+            route: null
         };
         
+        this.hashDidChange = this.hashDidChange.bind(this);
         this.checkLogin = this.checkLogin.bind(this);
         this.checkLoginDidFinish = this.checkLoginDidFinish.bind(this);
         this.checkLoginDidFail = this.checkLoginDidFail.bind(this);
@@ -38,6 +42,14 @@ class App extends React.Component {
     componentDidMount() {
         
         this.checkLogin();
+        window.addEventListener('hashchange', this.hashDidChange, false);
+        this.hashDidChange();
+    }
+    
+    hashDidChange(event) {
+        console.log('hashDidChange', location.hash);
+        var route = location.hash.replace('#', '');
+        this.setState({route: route});
     }
     
     checkLogin() {
@@ -136,9 +148,7 @@ class App extends React.Component {
         var isLogin = false;
         
         // Login form
-        switch(this.state.loginStatus) {
-        
-        case 0:
+        if(this.state.loginStatus == 0) {
             view = (
                 <SignIn
                     appId={this.state.appId}
@@ -146,17 +156,28 @@ class App extends React.Component {
                     onLoginStatusChange={this.checkLogin}
                 />
             );
-            break;
-        
-        case 1:
-            view = (
-                <Home />
-            );
+        } else {
             isLogin = true;
-            break;
-        
-        default:
-            
+            switch(this.state.route) {
+                default:
+                case 'home':
+                    view = (
+                        <HomeView />
+                    );
+                    break;
+                
+                case 'list':
+                    view = (
+                        <ListView appId={this.state.appId} apiKey={this.state.apiKey} />
+                    );
+                    break;
+                
+                case 'car':
+                    view = (
+                        <CarView />
+                    );
+                    break;
+            }
         }
             
         if(this.state.loading) {
@@ -165,7 +186,7 @@ class App extends React.Component {
         
         return (
             <div className="container">
-                <Header onLogout={this.logout} isLogin={isLogin} />
+                <Header onLogout={this.logout} isLogin={isLogin} route={this.state.route} />
                 {loading}
                 {view}
             </div>
