@@ -3,7 +3,7 @@ import injectTapEventPlugin from 'react-tap-event-plugin';
 import Cookie from './utils/cookie';
 import Header from './header';
 import SignIn from './sign-in';
-import Loading from './loading'
+import Loading from './loading';
 import HomeView from './home-view';
 import ListView from './list-view';
 import CarView from './car-view';
@@ -47,8 +47,8 @@ class App extends React.Component {
     }
     
     hashDidChange(event) {
-        console.log('hashDidChange', location.hash);
         var route = location.hash.replace('#', '');
+        console.log('hashDidChange', location.hash, route);
         this.setState({route: route});
     }
     
@@ -158,7 +158,15 @@ class App extends React.Component {
             );
         } else {
             isLogin = true;
-            switch(this.state.route) {
+            var route = this.state.route;
+            var params = [];
+            console.log('route', route);
+            if(typeof route === 'string' && route.indexOf('/') >= 0) {
+            	params = route.split('/');
+            	route = params.shift();
+            }
+            console.log('route', route, params);
+            switch(route) {
                 default:
                 case 'home':
                     view = (
@@ -167,8 +175,9 @@ class App extends React.Component {
                     break;
                 
                 case 'list':
+                	var parentId = params.length ? params[0] : null;
                     view = (
-                        <ListView appId={this.state.appId} apiKey={this.state.apiKey} />
+                        <ListView appId={this.state.appId} apiKey={this.state.apiKey} parentId={parentId} />
                     );
                     break;
                 
