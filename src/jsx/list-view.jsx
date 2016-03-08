@@ -12,6 +12,9 @@ import MoreVertIcon from 'material-ui/lib/svg-icons/navigation/more-vert';
 import IconMenu from 'material-ui/lib/menus/icon-menu';
 import MenuItem from 'material-ui/lib/menus/menu-item';
 import Colors from 'material-ui/lib/styles/colors';
+import ContentAdd from 'material-ui/lib/svg-icons/content/add';
+import Dialog from 'material-ui/lib/dialog';
+import RefreshIndicator from 'material-ui/lib/refresh-indicator';
 import Loading from './loading';
 
 
@@ -30,13 +33,23 @@ class ListView extends React.Component {
             parentLink: null,
             parentDidLoad: false,
             listDidLoad: false,
-            list: []
+            list: [],
+            contentAddDialogOpen: false,
+            contentAddDialogLoading: false,
+            contentAddDialogInputNameErrorMessage: null,
+            contentAddDialogInputNameValue: ''
         };
         
         this.loadParentDidSuccess = this.loadParentDidSuccess.bind(this);
         this.loadParentDidFinish = this.loadParentDidFinish.bind(this);
         this.loadListDidSuccess = this.loadListDidSuccess.bind(this);
         this.loadListDidFinish = this.loadListDidFinish.bind(this);
+        this.postHierachyDidSuccess = this.postHierachyDidSuccess.bind(this);
+        this.postHierachyDidFail = this.postHierachyDidFail.bind(this);
+        this.contentAddButtonDidSelect = this.contentAddButtonDidSelect.bind(this);
+        this.contentAddDialogOkButtonDidSelect = this.contentAddDialogOkButtonDidSelect.bind(this);
+        this.contentAddDialogCloseButtonDidSelect = this.contentAddDialogCloseButtonDidSelect.bind(this);
+        this.contentAddDialogInputDidChange = this.contentAddDialogInputDidChange.bind(this);
     }
     
     /**
@@ -143,12 +156,6 @@ class ListView extends React.Component {
         .always(this.loadListDidFinish);
     }
     
-    loadListDidFinish() {
-    	this.setState({
-    		listDidLoad: true
-    	});
-    }
-    
     loadListDidSuccess(response, state) {
         console.log(state, response);
         this.setState({list: response.results});
@@ -156,6 +163,59 @@ class ListView extends React.Component {
     
     loadListDidFail(xhr, state) {
         console.log(state, xhr);
+    }
+    
+    loadListDidFinish() {
+    	this.setState({
+    		listDidLoad: true
+    	});
+    }
+    
+    postHierachy(name) {
+    
+        var appId = this.props.appId;
+        var apiKey = this.props.apiKey;
+        var parentId = this.state.parentId;
+        if(!parentId) {
+            parentId = 'root';
+        }
+        
+        var url = 'https://api.parse.com/1/classes/list/';
+        var data = JSON.stringify({
+            parent: parentId,
+            name: name,
+            isTerminal: false
+        });
+        
+        $.ajax({
+            url: url,
+            method: 'POST',
+            dataType: 'json',
+            data: data,
+            beforeSend: function(xhr) {
+                xhr.setRequestHeader('X-Parse-Application-Id', appId);
+                xhr.setRequestHeader('X-Parse-REST-API-Key', apiKey);
+            }
+        })
+        .done(this.postHierachyDidSuccess)
+        .fail(this.postHierachyDidFail);
+    }
+    
+    postHierachyDidSuccess(response, state) {
+        console.log('Success', response);
+        this.setState({
+            contentAddDialogOpen: false,
+            contentAddDialogLoading: false,
+            contentAddDialogInputNameErrorMessage: null
+        });
+    }
+    
+    postHierachyDidFail(xhr, state) {
+        console.log('Fail');
+        this.setState({
+            contentAddDialogLoading: false,
+            contentAddDialogInputNameErrorMessage: 'error'
+        });
     }
     
     listDidSelect(objectId) {
@@ -169,6 +229,33 @@ class ListView extends React.Component {
     
     addCarDidSelect() {
     	console.log('addCarDidSelect');
+    }
+    
+    contentAddButtonDidSelect() {
+        this.setState({contentAddDialogOpen: true});
+    }
+    
+    contentAddDialogOkButtonDidSelect() {
+        console.log('contentAddDialogOkButtonDidSelect');
+        var name = this.state.contentAddDialogInputNameValue;
+        if(name.length < 1) {
+            console.log('contentAddDialogInputNameErrorMessage');
+            this.setState({contentAddDialogInputNameErrorMessage: 'This field is required'});
+        } else {
+            this.setState({
+                contentAddDialogLoading: true,
+                contentAddDialogInputNameErrorMessage: null
+            });
+            this.postHierachy(name);
+        }
+    }
+    
+    contentAddDialogCloseButtonDidSelect() {
+        this.setState({contentAddDialogOpen: false});
+    }
+    
+    contentAddDialogInputDidChange(event) {
+        this.setState({contentAddDialogInputNameValue: event.target.value});
     }
     
     /**
@@ -198,6 +285,34 @@ class ListView extends React.Component {
 				<MoreVertIcon color={Colors.grey400} />
 			</IconButton>
 		);
+		const contentAddDialogActions = [
+            <FlatButton
+                label="Ok"
+                primary={true}
+                keyboardFocused={true}
+                onTouchTap={this.contentAddDialogOkButtonDidSelect}
+            />,
+        ];
+        const contentAddDialogContent = this.state.contentAddDialogLoading ? (
+            <div style={{position: 'relative', height: 72, left: '50%'}}>
+                <RefreshIndicator
+                    size={50}
+                    left={-25}
+                    top={11}
+                    loadingColor={"#FF9800"}
+                    status="loading"
+                />
+            </div>
+        ) : (
+            <TextField
+            	ref="inputListNameToAdd"
+				hintText="List name"
+				floatingLabelText="Insert a list"
+                errorText={this.state.contentAddDialogInputNameErrorMessage}
+                value={this.state.contentAddDialogInputNameValue}
+                onChange={this.contentAddDialogInputDidChange}
+			/>
+        );
         return (
             <div className="list">
                 <h1>List</h1>
@@ -221,12 +336,19 @@ class ListView extends React.Component {
                         );
                     })}
                 </List>
-                <TextField
-                	ref="inputListNameToAdd"
-					hintText="List name"
-					floatingLabelText="Insert a list"
-				/>
-                <RaisedButton label="Add list" secondary={true} onTouchTap={this.addListDidSelect} />
+                <FloatingActionButton onTouchTap={this.contentAddButtonDidSelect}>
+                    <ContentAdd />
+                </FloatingActionButton>
+                <Dialog
+                    title="Add new hierarchy"
+                    actions={contentAddDialogActions}
+                    modal={this.state.contentAddDialogLoading}
+                    open={this.state.contentAddDialogOpen}
+                    onRequestClose={this.contentAddDialogCloseButtonDidSelect}
+                >
+                    {contentAddDialogContent}
+                </Dialog>
+                
                 <br />
                 <TextField
                 	ref="inputCarNameToAdd"
