@@ -21,10 +21,10 @@ class HomeView extends React.Component {
             <div className="home">
                 <h1>This is Carborn Manager service</h1>
                 <hr />
-                <RaisedButton href="#list" label="Manage Menu Hierarchy" linkButton={true} secondary={true} />
+                <RaisedButton href="#/list" label="Manage Menu Hierarchy" linkButton={true} secondary={true} />
                 <br />
                 <br />
-                <RaisedButton href="#car" label="Manage Car Specs" linkButton={true} secondary={true} />
+                <RaisedButton href="#/car" label="Manage Car Specs" linkButton={true} secondary={true} />
             </div>
         );
     }

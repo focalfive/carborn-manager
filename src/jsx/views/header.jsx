@@ -32,17 +32,17 @@ class Header extends React.Component {
             {
                 id: 'home',
                 title: 'Home',
-                url: '/#home'
+                url: '/#/home'
             },
             {
                 id: 'list',
                 title: 'Menu Hierarchy',
-                url: '/#list'
+                url: '/#/list'
             },
             {
                 id: 'car',
                 title: 'Car data',
-                url: '/#car'
+                url: '/#/car'
             }
         ];
         

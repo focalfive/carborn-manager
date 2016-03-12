@@ -9,6 +9,7 @@ import IconButton from 'material-ui/lib/icon-button';
 import ActionGrade from 'material-ui/lib/svg-icons/action/grade';
 import ActionChevronRight from 'material-ui/lib/svg-icons/navigation/chevron-right';
 import MoreVertIcon from 'material-ui/lib/svg-icons/navigation/more-vert';
+import CreateNewFolderIcon from 'material-ui/lib/svg-icons/file/create-new-folder';
 import IconMenu from 'material-ui/lib/menus/icon-menu';
 import MenuItem from 'material-ui/lib/menus/menu-item';
 import Colors from 'material-ui/lib/styles/colors';
@@ -34,22 +35,30 @@ class ListView extends React.Component {
             parentDidLoad: false,
             listDidLoad: false,
             list: [],
-            contentAddDialogOpen: false,
-            contentAddDialogLoading: false,
-            contentAddDialogInputNameErrorMessage: null,
-            contentAddDialogInputNameValue: ''
+            folderCreateDialogOpen: false,
+            folderCreateDialogLoading: false,
+            folderCreateDialogInputNameErrorMessage: null,
+            folderCreateDialogInputNameValue: '',
+            carAddDialogOpen: false,
+            carAddDialogLoading: false,
+            carAddDialogInputNameErrorMessage: null,
+            carAddDialogInputNameValue: ''
         };
         
         this.loadParentDidSuccess = this.loadParentDidSuccess.bind(this);
         this.loadParentDidFinish = this.loadParentDidFinish.bind(this);
         this.loadListDidSuccess = this.loadListDidSuccess.bind(this);
         this.loadListDidFinish = this.loadListDidFinish.bind(this);
-        this.postHierachyDidSuccess = this.postHierachyDidSuccess.bind(this);
-        this.postHierachyDidFail = this.postHierachyDidFail.bind(this);
-        this.contentAddButtonDidSelect = this.contentAddButtonDidSelect.bind(this);
-        this.contentAddDialogOkButtonDidSelect = this.contentAddDialogOkButtonDidSelect.bind(this);
-        this.contentAddDialogCloseButtonDidSelect = this.contentAddDialogCloseButtonDidSelect.bind(this);
-        this.contentAddDialogInputDidChange = this.contentAddDialogInputDidChange.bind(this);
+        this.createFolderDidSuccess = this.createFolderDidSuccess.bind(this);
+        this.createFolderDidFail = this.createFolderDidFail.bind(this);
+        this.folderCreateButtonDidSelect = this.folderCreateButtonDidSelect.bind(this);
+        this.folderCreateDialogOkButtonDidSelect = this.folderCreateDialogOkButtonDidSelect.bind(this);
+        this.folderCreateDialogCloseButtonDidSelect = this.folderCreateDialogCloseButtonDidSelect.bind(this);
+        this.folderCreateDialogInputDidChange = this.folderCreateDialogInputDidChange.bind(this);
+        this.carAddButtonDidSelect = this.carAddButtonDidSelect.bind(this);
+        this.carAddDialogOkButtonDidSelect = this.carAddDialogOkButtonDidSelect.bind(this);
+        this.carAddDialogCloseButtonDidSelect = this.carAddDialogCloseButtonDidSelect.bind(this);
+        this.carAddDialogInputDidChange = this.carAddDialogInputDidChange.bind(this);
     }
     
     /**
@@ -58,13 +67,21 @@ class ListView extends React.Component {
     componentDidMount() {
         console.log('componentDidMount');
 /*         this.loadList(); */
+		this.setState({
+			parentId: this.props.params.parentId,
+			parentName: null,
+			parentLink: null,
+			parentDidLoad: false,
+			listDidLoad: false
+		}, function() {
+			this.loadList();
+		});
     }
     
     componentWillReceiveProps (props) {
         console.log('componentWillReceiveProps', props);
-/*         this.loadList(); */
 		this.setState({
-			parentId: props.parentId,
+			parentId: props.params.parentId,
 			parentName: null,
 			parentLink: null,
 			parentDidLoad: false,
@@ -79,8 +96,8 @@ class ListView extends React.Component {
      */
     loadParent(id) {
         
-        var appId = this.props.appId;
-        var apiKey = this.props.apiKey;
+        var appId = this.props.route.appId;
+        var apiKey = this.props.route.apiKey;
         
         var url = 'https://api.parse.com/1/classes/list/' + id;
         
@@ -127,8 +144,8 @@ class ListView extends React.Component {
      */
     loadList() {
         
-        var appId = this.props.appId;
-        var apiKey = this.props.apiKey;
+        var appId = this.props.route.appId;
+        var apiKey = this.props.route.apiKey;
         var parent = this.state.parentId;
         console.log('loadList', parent);
         if(parent) {
@@ -171,10 +188,10 @@ class ListView extends React.Component {
     	});
     }
     
-    postHierachy(name) {
+    createFolder(name) {
     
-        var appId = this.props.appId;
-        var apiKey = this.props.apiKey;
+        var appId = this.props.route.appId;
+        var apiKey = this.props.route.apiKey;
         var parentId = this.state.parentId;
         if(!parentId) {
             parentId = 'root';
@@ -197,65 +214,75 @@ class ListView extends React.Component {
                 xhr.setRequestHeader('X-Parse-REST-API-Key', apiKey);
             }
         })
-        .done(this.postHierachyDidSuccess)
-        .fail(this.postHierachyDidFail);
+        .done(this.createFolderDidSuccess)
+        .fail(this.createFolderDidFail);
     }
     
-    postHierachyDidSuccess(response, state) {
+    createFolderDidSuccess(response, state) {
         console.log('Success', response);
         this.setState({
-            contentAddDialogOpen: false,
-            contentAddDialogLoading: false,
-            contentAddDialogInputNameErrorMessage: null
+            folderCreateDialogOpen: false,
+            folderCreateDialogLoading: false,
+            folderCreateDialogInputNameErrorMessage: null
         });
     }
     
-    postHierachyDidFail(xhr, state) {
+    createFolderDidFail(xhr, state) {
         console.log('Fail');
         this.setState({
-            contentAddDialogLoading: false,
-            contentAddDialogInputNameErrorMessage: 'error'
+            folderCreateDialogLoading: false,
+            folderCreateDialogInputNameErrorMessage: 'error'
         });
     }
     
     listDidSelect(objectId) {
     	console.log(objectId);
-    	location.href = '#list/' + objectId;
+    	location.href = '#/list/' + objectId;
     }
     
-    addListDidSelect() {
-    	console.log('addCarDidSelect');
+    folderCreateButtonDidSelect() {
+        this.setState({folderCreateDialogOpen: true});
     }
     
-    addCarDidSelect() {
-    	console.log('addCarDidSelect');
-    }
-    
-    contentAddButtonDidSelect() {
-        this.setState({contentAddDialogOpen: true});
-    }
-    
-    contentAddDialogOkButtonDidSelect() {
-        console.log('contentAddDialogOkButtonDidSelect');
-        var name = this.state.contentAddDialogInputNameValue;
+    folderCreateDialogOkButtonDidSelect() {
+        console.log('folderCreateDialogOkButtonDidSelect');
+        var name = this.state.folderCreateDialogInputNameValue;
         if(name.length < 1) {
-            console.log('contentAddDialogInputNameErrorMessage');
-            this.setState({contentAddDialogInputNameErrorMessage: 'This field is required'});
+            console.log('folderCreateDialogInputNameErrorMessage');
+            this.setState({folderCreateDialogInputNameErrorMessage: 'This field is required'});
         } else {
             this.setState({
-                contentAddDialogLoading: true,
-                contentAddDialogInputNameErrorMessage: null
+                folderCreateDialogLoading: true,
+                folderCreateDialogInputNameErrorMessage: null
             });
-            this.postHierachy(name);
+            this.createFolder(name);
         }
     }
     
-    contentAddDialogCloseButtonDidSelect() {
-        this.setState({contentAddDialogOpen: false});
+    folderCreateDialogCloseButtonDidSelect() {
+        this.setState({folderCreateDialogOpen: false});
     }
     
-    contentAddDialogInputDidChange(event) {
-        this.setState({contentAddDialogInputNameValue: event.target.value});
+    folderCreateDialogInputDidChange(event) {
+        this.setState({folderCreateDialogInputNameValue: event.target.value});
+    }
+    
+    carAddButtonDidSelect() {
+        this.setState({carAddDialogOpen: true});
+    }
+    
+    carAddDialogOkButtonDidSelect() {
+        console.log('carAddDialogOkButtonDidSelect');
+        var carId = this.state.carAddDialogSelectedCarId;
+/*         this.addCar(carId); */
+    }
+    
+    carAddDialogCloseButtonDidSelect() {
+        this.setState({carAddDialogOpen: false});
+    }
+    
+    carAddDialogInputDidChange(event) {
+        this.setState({carAddDialogInputNameValue: event.target.value});
     }
     
     /**
@@ -285,15 +312,15 @@ class ListView extends React.Component {
 				<MoreVertIcon color={Colors.grey400} />
 			</IconButton>
 		);
-		const contentAddDialogActions = [
+		const folderCreateDialogActions = [
             <FlatButton
                 label="Ok"
                 primary={true}
                 keyboardFocused={true}
-                onTouchTap={this.contentAddDialogOkButtonDidSelect}
+                onTouchTap={this.folderCreateDialogOkButtonDidSelect}
             />,
         ];
-        const contentAddDialogContent = this.state.contentAddDialogLoading ? (
+        const folderCreateDialogContent = this.state.folderCreateDialogLoading ? (
             <div style={{position: 'relative', height: 72, left: '50%'}}>
                 <RefreshIndicator
                     size={50}
@@ -308,11 +335,33 @@ class ListView extends React.Component {
             	ref="inputListNameToAdd"
 				hintText="List name"
 				floatingLabelText="Insert a list"
-                errorText={this.state.contentAddDialogInputNameErrorMessage}
-                value={this.state.contentAddDialogInputNameValue}
-                onChange={this.contentAddDialogInputDidChange}
+                errorText={this.state.folderCreateDialogInputNameErrorMessage}
+                value={this.state.folderCreateDialogInputNameValue}
+                onChange={this.folderCreateDialogInputDidChange}
 			/>
         );
+		const carAddDialogActions = [
+            <FlatButton
+                label="Ok"
+                primary={true}
+                keyboardFocused={true}
+                onTouchTap={this.carAddDialogOkButtonDidSelect}
+            />,
+        ];
+        const carAddDialogContent = this.state.carAddDialogLoading ? (
+            <div style={{position: 'relative', height: 72, left: '50%'}}>
+                <RefreshIndicator
+                    size={50}
+                    left={-25}
+                    top={11}
+                    loadingColor={"#FF9800"}
+                    status="loading"
+                />
+            </div>
+        ) : (
+            <div>carAdd</div>
+        );
+        const floatingActionButtonStyle = {margin: 5};
         return (
             <div className="list">
                 <h1>List</h1>
@@ -336,26 +385,31 @@ class ListView extends React.Component {
                         );
                     })}
                 </List>
-                <FloatingActionButton onTouchTap={this.contentAddButtonDidSelect}>
+                <FloatingActionButton style={floatingActionButtonStyle} onTouchTap={this.folderCreateButtonDidSelect}>
+    				<CreateNewFolderIcon />
+                </FloatingActionButton>
+                <Dialog
+                    title="Create new folder"
+                    actions={folderCreateDialogActions}
+                    modal={this.state.folderCreateDialogLoading}
+                    open={this.state.folderCreateDialogOpen}
+                    onRequestClose={this.folderCreateDialogCloseButtonDidSelect}
+                >
+                    {folderCreateDialogContent}
+                </Dialog>
+                
+                <FloatingActionButton style={floatingActionButtonStyle} onTouchTap={this.carAddButtonDidSelect}>
                     <ContentAdd />
                 </FloatingActionButton>
                 <Dialog
-                    title="Add new hierarchy"
-                    actions={contentAddDialogActions}
-                    modal={this.state.contentAddDialogLoading}
-                    open={this.state.contentAddDialogOpen}
-                    onRequestClose={this.contentAddDialogCloseButtonDidSelect}
+                    title="Add car"
+                    actions={carAddDialogActions}
+                    modal={this.state.carAddDialogLoading}
+                    open={this.state.carAddDialogOpen}
+                    onRequestClose={this.carAddDialogCloseButtonDidSelect}
                 >
-                    {contentAddDialogContent}
+                    {carAddDialogContent}
                 </Dialog>
-                
-                <br />
-                <TextField
-                	ref="inputCarNameToAdd"
-					hintText="Car name"
-					floatingLabelText="Insert a car"
-				/>
-                <RaisedButton label="Add car" secondary={true} onTouchTap={this.addCarDidSelect} />
             </div>
         );
     }

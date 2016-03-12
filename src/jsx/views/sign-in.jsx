@@ -1,6 +1,6 @@
 import React from 'react';
-import Cookie from './utils/cookie';
 import { TextField, RaisedButton } from 'material-ui';
+import Cookie from '../utils/cookie';
 import Loading from './loading';
 
 
