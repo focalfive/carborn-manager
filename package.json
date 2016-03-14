@@ -24,6 +24,7 @@
     "backbone-react-component": "^0.10.0",
     "browserify": "13.0.0",
     "del": "2.2.0",
+    "jquery": "^2.2.1",
     "material-ui": "0.14.4",
     "react": "0.14.7",
     "react-dom": "0.14.7",

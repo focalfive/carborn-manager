@@ -1,5 +1,6 @@
 import React from 'react';
 import RaisedButton from 'material-ui/lib/raised-button';
+import Cars from './cars';
 
 
 /// CarView component class
@@ -16,10 +17,10 @@ class CarView extends React.Component {
      * Render view
      */
     render() {
-        // Login form
         return (
             <div className="car">
                 <h1>Car</h1>
+                <Cars />
             </div>
         );
     }

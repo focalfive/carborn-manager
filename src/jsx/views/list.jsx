@@ -17,6 +17,7 @@ import ContentAdd from 'material-ui/lib/svg-icons/content/add';
 import Dialog from 'material-ui/lib/dialog';
 import RefreshIndicator from 'material-ui/lib/refresh-indicator';
 import Loading from './loading';
+import Cars from './cars';
 
 
 /// ListView component class
@@ -359,7 +360,7 @@ class ListView extends React.Component {
                 />
             </div>
         ) : (
-            <div>carAdd</div>
+            <Cars />
         );
         const floatingActionButtonStyle = {margin: 5};
         return (
