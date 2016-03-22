@@ -1,4 +1,5 @@
 import React from 'react';
+import backboneReact from 'backbone-react-component';
 import RaisedButton from 'material-ui/lib/raised-button';
 import List from 'material-ui/lib/lists/list';
 import ListItem from 'material-ui/lib/lists/list-item';
@@ -18,6 +19,8 @@ import Dialog from 'material-ui/lib/dialog';
 import RefreshIndicator from 'material-ui/lib/refresh-indicator';
 import Loading from './loading';
 import Cars from './cars';
+import FolderList from '../models/folder-list';
+import Folder from '../models/folder';
 
 
 /// ListView component class
@@ -46,6 +49,8 @@ class ListView extends React.Component {
             carAddDialogInputNameValue: ''
         };
         
+        this.collection = new FolderList();
+        this.parentModel = new Folder();
         this.loadParentDidSuccess = this.loadParentDidSuccess.bind(this);
         this.loadParentDidFinish = this.loadParentDidFinish.bind(this);
         this.loadListDidSuccess = this.loadListDidSuccess.bind(this);
@@ -60,6 +65,19 @@ class ListView extends React.Component {
         this.carAddDialogOkButtonDidSelect = this.carAddDialogOkButtonDidSelect.bind(this);
         this.carAddDialogCloseButtonDidSelect = this.carAddDialogCloseButtonDidSelect.bind(this);
         this.carAddDialogInputDidChange = this.carAddDialogInputDidChange.bind(this);
+    }
+    
+    componentWillMount() {
+        backboneReact.on(this, {
+            collections: {
+                folderList: this.collection,
+                listDidLoad: true
+            },
+            models: {
+            	parentFolder: this.parentModel,
+            	parentDidLoad: true
+            }
+        });
     }
     
     /**
@@ -150,11 +168,14 @@ class ListView extends React.Component {
         var parent = this.state.parentId;
         console.log('loadList', parent);
         if(parent) {
-        	this.loadParent(parent);
-        } else {
-            parent = 'root';
-            this.loadParentDidFinish();
+        	this.parentModel.id = parent;
+	        this.parentModel.fetch();
         }
+        
+        this.collection.parent = parent;
+        this.collection.fetch();
+        
+        return;
         
         var url = 'https://api.parse.com/1/classes/list/';
         var data = 'where=' + JSON.stringify({parent: parent});
@@ -290,18 +311,24 @@ class ListView extends React.Component {
      * Render view
      */
     render() {
-        var collection = this.state.list;
+    	console.log(this.state.folderList);
+    
+/*         var collection = this.state.list; */
         var listDidSelectHandler = this.listDidSelect;
         var parentLinkButton = null;
-        if(this.state.parentLink) {
+        if(this.state.parentFolder) {
+        	const parentLink = '#list/' + this.state.parentFolder.parent;
         	parentLinkButton = (
-            	<FlatButton label="< Parent" linkButton={true} href={this.state.parentLink} />
+            	<FlatButton label="< Parent" linkButton={true} href={parentLink} />
 	        );
         }
         
         var loading = null;
         console.log('render', this.state.parentDidLoad, this.state.listDidLoad);
-        if(!this.state.parentDidLoad || !this.state.listDidLoad) {
+        var parentDidLoad = !!this.state.parentFolder;
+        var listDidLoad = !!this.state.folderList;
+        
+        if(!parentDidLoad || !listDidLoad) {
             loading = (<Loading />);
         }
         const iconButtonElement = (
@@ -369,7 +396,7 @@ class ListView extends React.Component {
                 {loading}
                 {parentLinkButton}
                 <List>
-                    {collection.map(function(model) {
+                    {this.state.folderList.map((model) => {
 				        const rightIconMenu = (
 							<IconMenu iconButtonElement={iconButtonElement}>
 								<MenuItem onTouchTap={listDidSelectHandler.bind(this, model.objectId)}>Go</MenuItem>

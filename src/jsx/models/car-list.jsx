@@ -28,7 +28,6 @@ class CarList extends Backbone.Collection {
     }
     
     sync(method, collection, options) {
-        console.log('overrided sync');
         options.beforeSend = function (xhr) {
             xhr.setRequestHeader('X-Parse-Application-Id', 'IvBZLAh4TFKfiG7vewerHgZpuWAjNMHowGSg2PMZ');
             xhr.setRequestHeader('X-Parse-REST-API-Key', 'kJbBe3wvZnh75A1GThWK15M27QomYQZhWxdIDTFO');

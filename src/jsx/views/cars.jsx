@@ -20,9 +20,9 @@ class Cars extends React.Component {
         super(props);
         
         this.state = {
-            collection: new CarList(),
-            selectedIds: []
+            collection: new CarList()
         };
+        this.selectedIds = [];
         
         this.rowDidSelect = this.rowDidSelect.bind(this);
     }
@@ -43,9 +43,7 @@ class Cars extends React.Component {
         for(i = 0; i < count; ++i) {
             selected.push(this.state.carList[i].objectId);
         }
-        this.setState({
-            selectedIds: selected
-        });
+        this.selectedIds = selected;
         console.log(selected);
     }
     
@@ -61,7 +59,8 @@ class Cars extends React.Component {
             <Table
                 multiSelectable={true}
                 height={height}
-                onRowSelection={this.rowDidSelect}>
+                onRowSelection={this.rowDidSelect}
+            >
                 <TableHeader>
                     <TableRow>
                         <TableHeaderColumn>Maker</TableHeaderColumn>
