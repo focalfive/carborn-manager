@@ -5,20 +5,25 @@ class Folder extends Backbone.Model {
         super(options);
         
         this.id = null;
+        this.idAttribute = 'objectId';
     }
     
     url() {
+    	console.log('url', this.id);
+    	var url = 'https://api.parse.com/1/classes/list/';
     	if(this.id) {
-	        return 'https://api.parse.com/1/classes/list/' + this.id;
+	        return url + this.id;
     	}
     	
-    	return null;
+    	return url;
     }
     
     defaults() {
         return {
-            objectId: '',
-            name: ''
+            objectId: null,
+            name: null,
+            parent: null,
+            isTerminam: false
         }
     }
     

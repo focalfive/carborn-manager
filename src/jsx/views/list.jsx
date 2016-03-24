@@ -51,10 +51,6 @@ class ListView extends React.Component {
         
         this.collection = new FolderList();
         this.parentModel = new Folder();
-        this.loadParentDidSuccess = this.loadParentDidSuccess.bind(this);
-        this.loadParentDidFinish = this.loadParentDidFinish.bind(this);
-        this.loadListDidSuccess = this.loadListDidSuccess.bind(this);
-        this.loadListDidFinish = this.loadListDidFinish.bind(this);
         this.createFolderDidSuccess = this.createFolderDidSuccess.bind(this);
         this.createFolderDidFail = this.createFolderDidFail.bind(this);
         this.folderCreateButtonDidSelect = this.folderCreateButtonDidSelect.bind(this);
@@ -111,54 +107,6 @@ class ListView extends React.Component {
     }
     
     /**
-     * Load parent
-     */
-    loadParent(id) {
-        
-        var appId = this.props.route.appId;
-        var apiKey = this.props.route.apiKey;
-        
-        var url = 'https://api.parse.com/1/classes/list/' + id;
-        
-        $.ajax({
-            url: url,
-            method: 'GET',
-            dataType: 'json',
-            beforeSend: function(xhr) {
-                xhr.setRequestHeader('X-Parse-Application-Id', appId);
-                xhr.setRequestHeader('X-Parse-REST-API-Key', apiKey);
-            }
-        })
-        .done(this.loadParentDidSuccess)
-        .fail(this.loadParentDidFail)
-        .always(this.loadParentDidFinish);
-    }
-    
-    loadParentDidFinish() {
-    	this.setState({
-    		parentDidLoad: true
-    	});
-    }
-    
-    loadParentDidSuccess(response, state) {
-        console.log(state, response);
-        var grandParent = response.parent;
-        var parentLink = null;
-        if(grandParent) {
-        	if(grandParent === 'root') {
-        		parentLink = '#list';
-        	} else {
-	        	parentLink = '#list/' + grandParent;
-        	}
-        }
-        this.setState({parentName: response.name, parentLink: parentLink});
-    }
-    
-    loadParentDidFail(xhr, state) {
-        console.log(state, xhr);
-    }
-    
-    /**
      * Load list
      */
     loadList() {
@@ -174,40 +122,6 @@ class ListView extends React.Component {
         
         this.collection.parent = parent;
         this.collection.fetch();
-        
-        return;
-        
-        var url = 'https://api.parse.com/1/classes/list/';
-        var data = 'where=' + JSON.stringify({parent: parent});
-        
-        $.ajax({
-            url: url,
-            method: 'GET',
-            data: data,
-            dataType: 'json',
-            beforeSend: function(xhr) {
-                xhr.setRequestHeader('X-Parse-Application-Id', appId);
-                xhr.setRequestHeader('X-Parse-REST-API-Key', apiKey);
-            }
-        })
-        .done(this.loadListDidSuccess)
-        .fail(this.loadListDidFail)
-        .always(this.loadListDidFinish);
-    }
-    
-    loadListDidSuccess(response, state) {
-        console.log(state, response);
-        this.setState({list: response.results});
-    }
-    
-    loadListDidFail(xhr, state) {
-        console.log(state, xhr);
-    }
-    
-    loadListDidFinish() {
-    	this.setState({
-    		listDidLoad: true
-    	});
     }
     
     createFolder(name) {
@@ -218,6 +132,26 @@ class ListView extends React.Component {
         if(!parentId) {
             parentId = 'root';
         }
+        
+        var folder = new Folder();
+        
+        folder.save({
+        	objectId: null,
+            parent: parentId,
+            name: name,
+            isTerminal: false
+        }, {
+        	success: (response) => {
+	        	console.log(response);
+	            this.setState({
+	            	folderCreateDialogOpen: false,
+	                folderCreateDialogLoading: false
+	            });
+	            this.collection.fetch();
+        	}
+        });
+        return;
+        
         
         var url = 'https://api.parse.com/1/classes/list/';
         var data = JSON.stringify({
@@ -275,6 +209,7 @@ class ListView extends React.Component {
         } else {
             this.setState({
                 folderCreateDialogLoading: true,
+                folderCreateDialogInputNameValue: '',
                 folderCreateDialogInputNameErrorMessage: null
             });
             this.createFolder(name);
